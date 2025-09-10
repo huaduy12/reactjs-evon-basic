@@ -1,6 +1,9 @@
 import "./App.css";
 import Card from "./components/card/Card";
+import CardList from "./components/card/CardList";
+import CardTailwind from "./components/card/CardTailwind";
 import Counter from "./components/counter/Counter";
+import Photos from "./components/photo/Photos";
 import Game from "./components/tictactoe/Game";
 import GameReducer from "./components/tictactoe/GameReducer";
 import Toogle from "./components/toggle/Toogle";
@@ -23,7 +26,8 @@ function App() {
       <Counter></Counter> */}
       {/* <Game></Game> */}
       {/* <GameReducer></GameReducer> */}
-      <Card></Card>
+      {/* <CardList></CardList> */}
+      <Photos></Photos>
     </div>
   );
 }
