@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
 const getPhotos = async (page) => {
@@ -16,16 +16,17 @@ const getPhotos = async (page) => {
 const Photos = () => {
   const [randomPhotos, setRandomPhotos] = useState([]);
   const [nextPage, setNextPage] = useState(1);
-  const handlerLoadMore = async () => {
-    const photos = await getPhotos(nextPage);
+  const handlerLoadMore = useRef(null);
 
-    const newPhotos = [...randomPhotos, ...photos];
-    setRandomPhotos(newPhotos);
-    setNextPage(nextPage + 1);
+  handlerLoadMore.current = async () => {
+    const photos = await getPhotos(nextPage);
+    setRandomPhotos((prev) => [...prev, ...photos]); // luôn lấy list mới nhất
+    setNextPage((prev) => prev + 1); // luôn tăng đúng
   };
+
   useEffect(() => {
-    handlerLoadMore();
-  }, []);
+    handlerLoadMore.current();
+  }, []); // chỉ chạy 1 lần
 
   return (
     <div>
@@ -46,7 +47,7 @@ const Photos = () => {
       </div>
       <div className="text-center">
         <button
-          onClick={handlerLoadMore}
+          onClick={handlerLoadMore.current}
           className="inline-block px-8 py-8 bg-purple-600 text-white"
         >
           Load more

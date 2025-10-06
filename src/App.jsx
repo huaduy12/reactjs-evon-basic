@@ -3,6 +3,9 @@ import Card from "./components/card/Card";
 import CardList from "./components/card/CardList";
 import CardTailwind from "./components/card/CardTailwind";
 import Counter from "./components/counter/Counter";
+import HackerNews from "./components/news/HackerNews";
+import HackerNewsButton from "./components/news/HackerNewsButton";
+import HackerNewsReducer from "./components/news/HackerNewsReducer";
 import Photos from "./components/photo/Photos";
 import Game from "./components/tictactoe/Game";
 import GameReducer from "./components/tictactoe/GameReducer";
@@ -27,7 +30,9 @@ function App() {
       {/* <Game></Game> */}
       {/* <GameReducer></GameReducer> */}
       {/* <CardList></CardList> */}
-      <Photos></Photos>
+      {/* <Photos></Photos> */}
+      {/* <HackerNews></HackerNews> */}
+      <HackerNewsReducer></HackerNewsReducer>
     </div>
   );
 }
