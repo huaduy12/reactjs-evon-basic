@@ -11,7 +11,7 @@ const HackerNews = () => {
     try {
       setLoading(true);
       const response = await axios.get(
-        `https://hn.algolia.com/api/v1/search?query=${query}`
+        `https://hn.algolia.com/api/v1/search?query=${query}`,
       );
       console.log("data: ", response.data.hits);
       setHits(response.data.hits || []);
@@ -33,7 +33,7 @@ const HackerNews = () => {
     <div className="bg-white mx-auto mt-5 mb-5 p-5 rounded-lg shadow-md w-2/4">
       <input
         type="text"
-        className="border border-gray-200 p-5 m-5 p-5 block w-full rounded-md mb-5 transition-all focus:border-blue-400"
+        className="border border-gray-200 p-5 m-5 block w-full rounded-md mb-5 transition-all focus:border-blue-400"
         defaultValue={query}
         onChange={handlerUpdateQuery}
       />

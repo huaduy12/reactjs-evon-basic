@@ -27,7 +27,7 @@ const gameReducer = (state, action) => {
     }
 
     default:
-      console.log("Vào defaul");
+      console.log("Vào default");
       break;
   }
 };

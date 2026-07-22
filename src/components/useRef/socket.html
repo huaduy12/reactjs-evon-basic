@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Spring Boot WebSocket Client Test</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .container {
+        max-width: 600px;
+        margin: auto;
+      }
+      #status {
+        font-weight: bold;
+      }
+      #messages {
+        border: 1px solid #ccc;
+        padding: 10px;
+        height: 150px;
+        overflow-y: scroll;
+        margin-top: 10px;
+      }
+      .log-error {
+        color: red;
+      }
+      .log-success {
+        color: green;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>WebSocket Connection Test</h2>
+
+      <p>Trạng thái: <span id="status">Disconnected</span></p>
+
+      <label for="endpoint">Chọn Endpoint:</label>
+      <select id="endpoint">
+        <option value="/ws">Back Office (/ws/backoffice)</option>
+        <option value="/ws-frontoffice">Front Office (/ws/frontoffice)</option>
+      </select>
+
+      <p>
+        <label for="token">Token/Mật khẩu (Authorization/login):</label>
+        <input
+          type="text"
+          id="token"
+          value="YOUR_TOKEN_HERE"
+          style="width: 80%"
+        />
+      </p>
+
+      <button onclick="connect()">Connect</button>
+      <button onclick="disconnect()" disabled id="disconnectBtn">
+        Disconnect
+      </button>
+
+      <h3>Tin nhắn nhận được:</h3>
+      <div id="messages"></div>
+
+      <hr />
+
+      <h4>Gửi tin nhắn (Test SEND):</h4>
+      <input
+        type="text"
+        id="sendInput"
+        placeholder="Nội dung tin nhắn"
+        style="width: 60%"
+      />
+      <button onclick="sendMessage()" disabled id="sendBtn">
+        Gửi tới /app/bo/hello
+      </button>
+    </div>
+
+    <script>
+      var stompClient = null;
+      var currentEndpoint = "/ws";
+      var serverUrl = "http://localhost:8080"; // CHỈNH SỬA PORT CỦA BẠN NẾU CẦN
+
+      function connect() {
+        if (stompClient) disconnect(); // Đảm bảo ngắt kết nối cũ
+
+        currentEndpoint = document.getElementById("endpoint").value;
+        var token = document.getElementById("token").value;
+        var socket = new SockJS(serverUrl + currentEndpoint);
+
+        stompClient = Stomp.over(socket);
+        stompClient.debug = function (str) {
+          console.log(str); // Log debug của STOMP ra console
+        };
+
+        var headers = {
+          // **Quan trọng:** Gửi header mà Interceptor của bạn đang mong đợi
+          // Nếu Interceptor kiểm tra header "Authorization":
+          Authorization: token,
+
+          // Nếu Interceptor kiểm tra header "login":
+          username: "duyhn",
+          // 'passcode': token
+        };
+
+        stompClient.connect(
+          headers,
+          function (frame) {
+            // KẾT NỐI THÀNH CÔNG (Sau khi đi qua Interceptor)
+            logMessage(
+              '<span class="log-success">Đã kết nối thành công: ' +
+                frame +
+                "</span>"
+            );
+            document.getElementById("status").textContent =
+              "Connected (" + currentEndpoint + ")";
+            document.getElementById("disconnectBtn").disabled = false;
+            document.getElementById("sendBtn").disabled = false;
+
+            // Subscribe (Đăng ký) vào một topic chung (Tùy chọn)
+            stompClient.subscribe("/topic/public", function (message) {
+              logMessage("Nhận tin nhắn topic: " + message.body);
+            });
+
+            // Subscribe (Đăng ký) nhận tin nhắn riêng (P2P) (Tùy chọn)
+            // Lưu ý: Spring sẽ tự động dịch /user/ thành /user/{sessionId}
+            stompClient.subscribe(
+              "/user/queue/notifications",
+              function (message) {
+                logMessage("Nhận tin nhắn P2P: " + message.body);
+              }
+            );
+          },
+          function (error) {
+            // KẾT NỐI THẤT BẠI (Do 401, 403, hoặc lỗi STOMP)
+            logMessage(
+              '<span class="log-error">LỖI KẾT NỐI: ' + error + "</span>"
+            );
+            document.getElementById("status").textContent = "Error";
+          }
+        );
+      }
+
+      function disconnect() {
+        if (stompClient !== null) {
+          stompClient.disconnect(function () {
+            logMessage('<span class="log-error">Đã ngắt kết nối.</span>');
+          });
+        }
+        document.getElementById("status").textContent = "Disconnected";
+        document.getElementById("disconnectBtn").disabled = true;
+        document.getElementById("sendBtn").disabled = true;
+      }
+
+      function sendMessage() {
+        var content = document.getElementById("sendInput").value;
+        if (!stompClient || !content) return;
+
+        // CHỈNH SỬA DESTINATION NÀY THEO PREFIX CỦA BẠN: /app/bo/ hoặc /app/fo/
+        var destination = currentEndpoint.includes("backoffice")
+          ? "/app/bo/hello"
+          : "/app/fo/hello";
+
+        stompClient.send(destination, {}, JSON.stringify({ message: content }));
+        logMessage("Đã gửi tin nhắn tới " + destination);
+        document.getElementById("sendInput").value = "";
+      }
+
+      function logMessage(message) {
+        var messages = document.getElementById("messages");
+        var p = document.createElement("p");
+        p.innerHTML = new Date().toLocaleTimeString() + " - " + message;
+        messages.appendChild(p);
+        messages.scrollTop = messages.scrollHeight; // Cuộn xuống cuối
+      }
+    </script>
+  </body>
+</html>
