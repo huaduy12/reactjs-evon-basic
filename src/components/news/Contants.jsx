@@ -83,3 +83,9 @@ export const STATUS_CONFIG = {
     color: "red",
   },
 };
+
+export const BASE_PAGE = {
+  page: 0,
+  pageSize: 20,
+  totalElement: 0,
+};

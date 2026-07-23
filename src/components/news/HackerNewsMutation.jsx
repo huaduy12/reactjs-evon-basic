@@ -19,60 +19,61 @@ import {
 } from "@ant-design/icons";
 import { BASE_PAGE, columnHackerNews, STATUS_CONFIG } from "./Contants";
 import dayjs from "dayjs";
+import { useMutation } from "@tanstack/react-query";
 
-const HackerNews1 = () => {
+const HackerNewsMutation = () => {
   // text nhập tìm kiếm
   // // keyword url dùng gọi api
   // const [searchQuery, setSearhQuery] = useState("");
 
   // const [page, setPage] = useState(0);
   // const [totalPages, setTotalPages] = useState(0);
-  const [hits, setHits] = useState([]);
+  //   const [hits, setHits] = useState([]);
   const [query, setQuery] = useState("");
-  const [pagination, setPagination] = useState(BASE_PAGE);
-  const [errorMsg, setErrorMgs] = useState(null);
-  const [loading, setLoading] = useState(false);
+  //   const [pagination, setPagination] = useState(BASE_PAGE);
+  //   const [errorMsg, setErrorMgs] = useState(null);
+  //   const [loading, setLoading] = useState(false);
 
   const [api, contextHolder] = notification.useNotification();
-  const openNotification = () => {
-    api.error({
-      message: "Lỗi",
-      description: errorMsg,
-      placement: "topRight",
-    });
-  };
+  //   const openNotification = () => {
+  //     api.error({
+  //       message: "Lỗi",
+  //       description: errorMsg,
+  //       placement: "topRight",
+  //     });
+  //   };
 
   // const handleFetchDataRef = useRef("");
   // call api
-  const handleFetchDataRef = async (data) => {
-    try {
-      setLoading(true);
-      setErrorMgs(null);
-      console.log(data);
+  //   const handleFetchDataRef = async (data) => {
+  //     try {
+  //       setLoading(true);
+  //       setErrorMgs(null);
+  //       console.log(data);
 
-      const response = await axios.get("https://hn.algolia.com/api/v1/search", {
-        params: {
-          query,
-          page: data.page,
-        },
-      });
-      setHits(response?.data?.hits || []);
+  //       const response = await axios.get("https://hn.algolia.com/api/v1/search", {
+  //         params: {
+  //           query,
+  //           page: data.page,
+  //         },
+  //       });
+  //       setHits(response?.data?.hits || []);
 
-      setPagination({
-        page: response?.data?.page ?? 0,
-        pageSize: response?.data?.hitsPerPage ?? 10,
-        totalElement: response?.data?.nbPages ?? 0,
-      });
-      console.log(response?.data?.hits);
-      setLoading(false);
-    } catch (error) {
-      console.log(error);
-      setLoading(false);
-      setErrorMgs(`The error: ${error.message}`);
-      setHits([]);
-      openNotification();
-    }
-  };
+  //       setPagination({
+  //         page: response?.data?.page ?? 0,
+  //         pageSize: response?.data?.hitsPerPage ?? 10,
+  //         totalElement: response?.data?.nbPages ?? 0,
+  //       });
+  //       console.log(response?.data?.hits);
+  //       setLoading(false);
+  //     } catch (error) {
+  //       console.log(error);
+  //       setLoading(false);
+  //       setErrorMgs(`The error: ${error.message}`);
+  //       setHits([]);
+  //       openNotification();
+  //     }
+  //   };
 
   //   const handleUpdateQuery = debounce((e) => {
   //     setQuery(e.target.value);
@@ -82,17 +83,47 @@ const HackerNews1 = () => {
   //   setPage(0);
   //   setSearhQuery(query.trim());
   // };
+
+  const {
+    mutate: handleFetchData,
+    data: searchResult,
+    isPending,
+  } = useMutation({
+    mutationFn: async ({ query, page, pageSize }) => {
+      const { data } = await axios.get("https://hn.algolia.com/api/v1/search", {
+        params: {
+          query,
+          page,
+        },
+      });
+      console.log(data);
+      console.log("PageSize: " + pageSize);
+
+      return data;
+    },
+    onError: (error) => {
+      api.error({
+        message: "Lỗi",
+        description:
+          error.response?.data?.message ||
+          error.message ||
+          "Có lỗi xảy ra khi gọi API",
+      });
+    },
+  });
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
-      handleFetchDataRef({
+      handleFetchData({
         query,
-        page: 0,
-        pageSize: pagination.pageSize,
+        page: BASE_PAGE.page,
       });
     }
   };
   useEffect(() => {
-    handleFetchDataRef(BASE_PAGE);
+    handleFetchData({
+      query,
+      page: BASE_PAGE.page,
+    });
     console.log("render");
   }, []);
 
@@ -264,10 +295,9 @@ const HackerNews1 = () => {
         <button
           className="bg-blue-500 text-white font-semibold"
           onClick={() => {
-            return handleFetchDataRef({
+            return handleFetchData({
               query,
-              page: pagination.page,
-              pageSize: pagination.pageSize,
+              page: BASE_PAGE.page,
             });
           }}
         >
@@ -278,7 +308,7 @@ const HackerNews1 = () => {
       {/* {loading && (
         <div className=" w-8 h-8 rounded-full border-blue-500 border-4 border-r-4 border-r-transparent animate-spin mx-auto my-10"></div>
       )} */}
-      {loading && <LoadingOverlay />}
+      {isPending && <LoadingOverlay />}
       {/*!loading && errorMsg && <p>{errorMsg}</p> */}
       {/* <div>
         {!loading &&
@@ -293,24 +323,26 @@ const HackerNews1 = () => {
             }
           })}
       </div> */}
-      {!loading && (
+      {!isPending && (
         <div>
           <Table
             columns={columns}
-            dataSource={hits}
+            dataSource={searchResult?.hits || []}
             rowKey="objectID"
             expandable={{
               showExpandColumn: false,
             }}
             scroll={{ x: 1000 }}
             pagination={{
-              current: pagination.page + 1,
-              pageSize: pagination.pageSize,
-              total: pagination.totalElement * pagination.pageSize,
+              current: (searchResult?.page ?? 0) + 1,
+              pageSize: searchResult?.hitsPerPage ?? 20,
+              total: (searchResult?.nbPages ?? 0) * 20,
               showSizeChanger: true,
               hideOnSinglePage: true,
               onChange: (page, pageSize) => {
-                handleFetchDataRef({
+                console.log(page + " " + pageSize);
+
+                handleFetchData({
                   query,
                   page: page - 1,
                   pageSize: pageSize,
@@ -324,4 +356,4 @@ const HackerNews1 = () => {
   );
 };
 
-export default HackerNews1;
+export default HackerNewsMutation;
