@@ -1,5 +1,5 @@
 import "./App.css";
-import HackerNewsMutation from "./components/news/HackerNewsMutation";
+import SignFormV2 from "./form/SignFormV2";
 
 function App() {
   return (
@@ -32,7 +32,8 @@ function App() {
       {/* <MovieSearchApp></MovieSearchApp> */}
       {/* <SignForm></SignForm> */}
       {/* <HackerNews1></HackerNews1> */}
-      <HackerNewsMutation></HackerNewsMutation>
+      {/* <HackerNewsMutation></HackerNewsMutation> */}
+      <SignFormV2></SignFormV2>
     </div>
   );
 }

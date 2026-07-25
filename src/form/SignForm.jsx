@@ -1,5 +1,5 @@
-import React from "react";
 import { useFormik } from "formik";
+import * as Yup from "yup";
 
 const validate = (values) => {
   const errors = {};
@@ -15,18 +15,27 @@ const validate = (values) => {
   }
   return errors;
 };
+
 const SignForm = () => {
   const formik = useFormik({
     initialValues: {
       firstName: "",
       lastName: "",
     },
-    validate,
+    // validate,
+    validationSchema: Yup.object({
+      firstName: Yup.string()
+        .max(20, "First Name must be less than or equal 20 characters")
+        .required("Fist name required"),
+      lastName: Yup.string()
+        .max(20, "Last Name must be less than or equal 20 characters")
+        .required("Last name required"),
+    }),
     onSubmit: (values) => {
       console.log(values);
     },
   });
-  console.log(formik);
+  // console.log(formik);
 
   return (
     <form
@@ -38,12 +47,13 @@ const SignForm = () => {
         <input
           type="text"
           id="firstName"
-          name="firstName"
+          // name="firstName"
           className="p-4 rounded-md border border-gray-100"
           placeholder="Enter the first name"
-          value={formik.values.firstName}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
+          // value={formik.values.firstName}
+          // onChange={formik.handleChange}
+          // onBlur={formik.handleBlur}
+          {...formik.getFieldProps("firstName")}
         ></input>
         {formik.touched.firstName && formik.errors.firstName ? (
           <div className="text-red-500">{formik.errors.firstName}</div>
@@ -57,12 +67,13 @@ const SignForm = () => {
         <input
           type="text"
           id="lastName"
-          name="lastName"
+          // name="lastName"
           className="p-4 rounded-md border border-gray-100"
           placeholder="Enter the last name"
-          value={formik.values.lastName}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
+          // value={formik.values.lastName}
+          // onChange={formik.handleChange}
+          // onBlur={formik.handleBlur}
+          {...formik.getFieldProps("lastName")}
         ></input>
         {formik.touched.lastName && formik.errors.lastName ? (
           <div className="text-red-500">{formik.errors.lastName}</div>
