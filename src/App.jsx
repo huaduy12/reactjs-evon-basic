@@ -1,5 +1,5 @@
 import "./App.css";
-import SignFormV2 from "./form/SignFormV2";
+import SignFormHook from "./form/SignFormHook";
 
 function App() {
   return (
@@ -15,6 +15,7 @@ function App() {
     //   ))}
     // </div>
     <div>
+      <SignFormHook></SignFormHook>
       {/* <Toogle></Toogle>
       <Counter></Counter> */}
       {/* <Game></Game> */}
@@ -33,7 +34,7 @@ function App() {
       {/* <SignForm></SignForm> */}
       {/* <HackerNews1></HackerNews1> */}
       {/* <HackerNewsMutation></HackerNewsMutation> */}
-      <SignFormV2></SignFormV2>
+      {/* <SignFormV2></SignFormV2> */}
     </div>
   );
 }
